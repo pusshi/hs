@@ -1,0 +1,31 @@
+@echo off
+REM 设置网络适配器的名称
+set "AdapterName=KEJI"  
+ 
+set "FileTmp=%temp%\ipList.txt"
+ipconfig /all >"%FileTmp%"
+for /f "delims=:" %%i in ('findstr /n /c:"%AdapterName%" "%FileTmp%"') do (
+    set "SkipRow=%%i"
+    goto :DoSkip
+)
+
+:DoSkip
+
+for /f "tokens=2 delims=:(" %%i in ('more +%SkipRow% "%FileTmp%" ^| findstr /v "IPv6" ^|findstr "IP"') do (
+    set "IP=%%i"
+    goto :ShowResult
+)
+PAUSE
+
+:ShowResult
+set "IP=%IP: =%"
+echo,%IP%
+
+route add 172.18.0.0 mask 255.255.254.0 %IP%
+
+pause
+
+
+
+
+#route add -p 172.18.1.178 mask 255.255.255.255 192.168.30.1  #增加永久路由
